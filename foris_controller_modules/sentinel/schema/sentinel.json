@@ -1,0 +1,200 @@
+{
+    "definitions": {
+        "sentinel_token": {"type": "string", "pattern": "^[a-z0-9]{64}$"},
+        "eula_version": {"type": "number", "minimum": 1},
+        "eula_disabled": {"enum": [0]},
+        "eula": {
+            "oneOf": [
+                {"$ref": "#/definitions/eula_version"},
+                {"$ref": "#/definitions/eula_disabled"}
+            ]
+        }
+    },
+    "oneOf": [
+        {
+            "description": "Request to obtain sentinel settings",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["request"]},
+                "action": {"enum": ["get_settings"]}
+            },
+            "additionalProperties": false
+        },
+        {
+            "description": "Reply to obtain sentinel settings",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["reply"]},
+                "action": {"enum": ["get_settings"]},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "eula": {"$ref": "#/definitions/eula", "description": "0 means not agreed"},
+                        "token": {
+                            "oneOf": [
+                                {"$ref": "#/definitions/sentinel_token"},
+                                {"enum": [null]}
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["eula", "token"]
+                }
+            },
+            "additionalProperties": false,
+            "required": ["data"]
+        },
+        {
+            "description": "Request to update settings",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["request"]},
+                "action": {"enum": ["update_settings"]},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "eula": {"$ref": "#/definitions/eula"},
+                        "token": {"$ref": "#/definitions/sentinel_token"}
+                    },
+                    "additionalProperties": false,
+                    "required": ["eula"]
+                }
+            },
+            "additionalProperties": false,
+            "required": ["data"]
+        },
+        {
+            "description": "Reply to update sentinel settings",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["reply"]},
+                "action": {"enum": ["update_settings"]},
+                "data": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "eula": {"$ref": "#/definitions/eula_version"},
+                                "token": {"$ref": "#/definitions/sentinel_token"}
+                            },
+                            "additionalProperties": false,
+                            "required": ["eula", "token"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "eula": {"$ref": "#/definitions/eula_disabled"}
+                            },
+                            "additionalProperties": false,
+                            "required": ["eula"]
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": ["data"]
+        },
+        {
+            "description": "Notification that sentinel settings was updated",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["notification"]},
+                "action": {"enum": ["update_settings"]},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "eula": {"$ref": "#/definitions/eula"}
+                    },
+                    "additionalProperties": false,
+                    "required": ["eula"]
+                }
+            },
+            "additionalProperties": false,
+            "required": ["data"]
+        },
+        {
+            "description": "Request to obtain fakepot settings",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["request"]},
+                "action": {"enum": ["get_fakepot_settings"]}
+            },
+            "additionalProperties": false
+        },
+        {
+            "description": "Reply to obtain sentinel settings",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["reply"]},
+                "action": {"enum": ["get_fakepot_settings"]},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {"type": "boolean"},
+                        "extra_option": {"type": "string"}
+                    },
+                    "additionalProperties": false,
+                    "required": ["enabled", "extra_option"]
+                }
+            },
+            "additionalProperties": false,
+            "required": ["data"]
+        },
+        {
+            "description": "Request to update fakepot settings",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["request"]},
+                "action": {"enum": ["update_fakepot_settings"]},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {"type": "boolean"},
+                        "extra_option": {"type": "string"}
+                    },
+                    "additionalProperties": false,
+                    "required": ["enabled", "extra_option"]
+                }
+            },
+            "additionalProperties": false,
+            "required": ["data"]
+        },
+        {
+            "description": "Reply to update sentinel settings",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["reply"]},
+                "action": {"enum": ["update_fakepot_settings"]},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "result": {"type": "boolean"}
+                    },
+                    "additionalProperties": false,
+                    "required": ["result"]
+                }
+            },
+            "additionalProperties": false,
+            "required": ["data"]
+        },
+        {
+            "description": "Notification that sentinel settings was updated",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["notification"]},
+                "action": {"enum": ["update_fakepot_settings"]},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {"type": "boolean"},
+                        "extra_option": {"type": "string"}
+                    },
+                    "additionalProperties": false,
+                    "required": ["enabled", "extra_option"]
+                }
+            },
+            "additionalProperties": false,
+            "required": ["data"]
+        }
+    ]
+}
