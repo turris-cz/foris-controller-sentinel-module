@@ -23,6 +23,7 @@ import secrets
 from foris_controller_testtools.fixtures import (
     only_message_buses,
     backend,
+    file_root_init,
     infrastructure,
     init_script_result,
     only_backends,
@@ -37,7 +38,7 @@ from foris_controller_testtools.fixtures import (
 from foris_controller_testtools.utils import get_uci_module, check_service_result
 
 
-def test_get_settings(infrastructure, uci_configs_init, start_buses):
+def test_get_settings(file_root_init, infrastructure, uci_configs_init, start_buses):
     res = infrastructure.process_message(
         {"module": "sentinel", "action": "get_settings", "kind": "request"}
     )
@@ -47,7 +48,9 @@ def test_get_settings(infrastructure, uci_configs_init, start_buses):
     assert "token" in res["data"]
 
 
-def test_update_settings(infrastructure, start_buses, init_script_result, uci_configs_init):
+def test_update_settings(
+    file_root_init, infrastructure, start_buses, init_script_result, uci_configs_init
+):
     filters = [("sentinel", "update_settings")]
 
     # once eula is set to be < 0 a token should be generated
@@ -111,7 +114,9 @@ def test_update_settings(infrastructure, start_buses, init_script_result, uci_co
 
 
 @pytest.mark.only_backends(["openwrt"])
-def test_update_settings_openwrt(infrastructure, start_buses, init_script_result, uci_configs_init):
+def test_update_settings_openwrt(
+    file_root_init, infrastructure, start_buses, init_script_result, uci_configs_init
+):
     uci = get_uci_module(infrastructure.name)
 
     # once eula is set to be < 0 a token should be generated
@@ -147,7 +152,7 @@ def test_update_settings_openwrt(infrastructure, start_buses, init_script_result
     assert uci.get_option_named(data, "sentinel", "main", "device_token") == token
 
 
-def test_get_fakepot_settings(infrastructure, uci_configs_init, start_buses):
+def test_get_fakepot_settings(file_root_init, infrastructure, uci_configs_init, start_buses):
     res = infrastructure.process_message(
         {"module": "sentinel", "action": "get_fakepot_settings", "kind": "request"}
     )
@@ -157,7 +162,9 @@ def test_get_fakepot_settings(infrastructure, uci_configs_init, start_buses):
     assert "extra_option" in res["data"]
 
 
-def test_update_fakepot_settings(infrastructure, start_buses, init_script_result, uci_configs_init):
+def test_update_fakepot_settings(
+    file_root_init, infrastructure, start_buses, init_script_result, uci_configs_init
+):
     filters = [("sentinel", "update_fakepot_settings")]
 
     notifications = infrastructure.get_notifications(filters=filters)
@@ -185,7 +192,7 @@ def test_update_fakepot_settings(infrastructure, start_buses, init_script_result
 
 @pytest.mark.only_backends(["openwrt"])
 def test_update_fakepot_settings_openwrt(
-    infrastructure, start_buses, init_script_result, uci_configs_init
+    file_root_init, infrastructure, start_buses, init_script_result, uci_configs_init
 ):
     uci = get_uci_module(infrastructure.name)
 
@@ -205,3 +212,29 @@ def test_update_fakepot_settings_openwrt(
 
     assert uci.parse_bool(uci.get_option_named(data, "sentinel", "fakepot", "enabled"))
     assert uci.get_option_named(data, "sentinel", "fakepot", "extra_option") == "second"
+
+
+def test_update_settings_invalid_eula(
+    file_root_init, infrastructure, start_buses, init_script_result, uci_configs_init
+):
+
+    res = infrastructure.process_message(
+        {"module": "sentinel", "action": "get_settings", "kind": "request"}
+    )
+    prev_eula = res["data"]["eula"]
+
+    token = "b" * 64
+    res = infrastructure.process_message(
+        {
+            "module": "sentinel",
+            "action": "update_settings",
+            "kind": "request",
+            "data": {"eula": 99, "token": token},
+        }
+    )
+    assert res["data"]["eula"] == prev_eula
+
+    res = infrastructure.process_message(
+        {"module": "sentinel", "action": "get_settings", "kind": "request"}
+    )
+    assert res["data"]["eula"] == prev_eula

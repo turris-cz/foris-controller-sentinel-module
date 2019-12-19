@@ -41,7 +41,7 @@ class OpenwrtSentinelHandler(Handler, BaseOpenwrtHandler):
     @logger_wrapper(logger)
     def update_settings(
         self, eula: int, token: typing.Optional[str] = None
-    ) -> typing.Optional[str]:
+    ) -> typing.Tuple[bool, int, typing.Optional[str]]:
         return OpenwrtSentinelHandler.uci.update_settings(eula, token)
 
     @logger_wrapper(logger)

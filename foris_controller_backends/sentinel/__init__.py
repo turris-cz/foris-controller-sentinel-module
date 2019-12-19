@@ -21,6 +21,7 @@ import logging
 
 from secrets import token_hex
 
+from foris_controller_backends.files import BaseFile
 from foris_controller_backends.services import OpenwrtServices
 from foris_controller_backends.uci import UciBackend, get_option_named, parse_bool, store_bool
 
@@ -40,6 +41,18 @@ class SentinelUci:
         with UciBackend() as backend:
             return backend.read("sentinel")
 
+    def _get_valid_eulas(self):
+        content = BaseFile()._file_content("/usr/share/sentinel-eula/EULAs.csv")
+        res = [0]
+
+        for line in content.splitlines(False):
+            try:
+                res.append(int(line.split(",")[0]))
+            except (ValueError, IndexError):
+                pass
+
+        return res
+
     def get_settings(self):
         data = self._read_uci()
         eula = int(get_option_named(data, "sentinel", "main", "agreed_with_eula_version", "0"))
@@ -48,7 +61,13 @@ class SentinelUci:
 
     def update_settings(self, eula, token=None):
 
+        valid_eulas = self._get_valid_eulas()
+        if eula not in valid_eulas:
+            data = self.get_settings()
+            return False, data["eula"], None
+
         with UciBackend() as backend:
+            data = backend.read("sentinel")
 
             backend.add_section("sentinel", "main", "main")
             # TODO check whether eula number matches current eula number
@@ -67,10 +86,7 @@ class SentinelUci:
         with OpenwrtServices() as services:
             services.restart("sentinel")
 
-        if eula == 0:
-            return None
-
-        return token
+        return True, eula, token if eula != 0 else None
 
     def get_fakepot_settings(self) -> dict:
         data = self._read_uci()

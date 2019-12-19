@@ -74,6 +74,7 @@
                         {
                             "type": "object",
                             "properties": {
+                                "result": {"type": "boolean"},
                                 "eula": {"$ref": "#/definitions/eula_version"},
                                 "token": {"$ref": "#/definitions/sentinel_token"}
                             },
@@ -83,7 +84,8 @@
                         {
                             "type": "object",
                             "properties": {
-                                "eula": {"$ref": "#/definitions/eula_disabled"}
+                                "result": {"type": "boolean"},
+                                "eula": {"$ref": "#/definitions/eula"}
                             },
                             "additionalProperties": false,
                             "required": ["eula"]

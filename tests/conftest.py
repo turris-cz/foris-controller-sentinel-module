@@ -42,6 +42,11 @@ def cmdline_script_root():
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_root")
 
 
+@pytest.fixture(scope="session")
+def file_root():
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_root")
+
+
 @pytest.fixture(scope="module")
 def controller_modules():
     return ["remote", "sentinel"]

@@ -32,6 +32,8 @@ logger = logging.getLogger(__name__)
 
 class MockSentinelHandler(Handler, BaseMockHandler):
 
+    valid_eulas: typing.List[int] = [0, 1, 2]
+
     eula: int = 0
     token: typing.Optional[str] = None
     fakepot_enabled: bool = False
@@ -44,18 +46,21 @@ class MockSentinelHandler(Handler, BaseMockHandler):
     @logger_wrapper(logger)
     def update_settings(
         self, eula: int, token: typing.Optional[str] = None
-    ) -> typing.Optional[str]:
+    ) -> typing.Tuple[bool, int, typing.Optional[str]]:
+        if eula not in MockSentinelHandler.valid_eulas:
+            return False, MockSentinelHandler.eula, None
+
         MockSentinelHandler.eula = eula
 
         if eula == 0:
-            return None
+            return True, eula, None
 
         if token is not None:
             MockSentinelHandler.token = token
         elif MockSentinelHandler.token is None:
             MockSentinelHandler.token = token_hex(32)
 
-        return MockSentinelHandler.token
+        return True, eula, MockSentinelHandler.token
 
     @logger_wrapper(logger)
     def get_fakepot_settings(self) -> dict:

@@ -18,7 +18,6 @@
 #
 
 import logging
-import typing
 
 from foris_controller.module_base import BaseModule
 from foris_controller.handler_base import wrap_required_functions
@@ -37,14 +36,16 @@ class SentinelModule(BaseModule):
     def action_update_settings(self, data):
         """ Update configuration of sentinel
         :param data: {"eula": 0..X} or {"eula": 0..X, "token": "..."}
-        :returns: {"eula": 0..X, "token": "..."} or {"eula": 0..X}
+        :returns: {"result": ..., "eula": 0..X, "token": "..."} or {"result": ..., "eula": 0..X}
         """
-        token: typing.Optional[str] = self.handler.update_settings(**data)
-        res = {"eula": data["eula"]}
-        self.notify("update_settings", res)
+        res, eula, token = self.handler.update_settings(**data)
+        if res:
+            self.notify("update_settings", {"eula": eula})
+
         if token:
-            res["token"] = token
-        return res
+            return {"result": res, "eula": eula, "token": token}
+
+        return {"result": res, "eula": eula}
 
     def action_get_fakepot_settings(self, data: dict):
         """ Get configuration of sentinel
