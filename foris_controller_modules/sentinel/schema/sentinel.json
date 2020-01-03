@@ -197,6 +197,46 @@
             },
             "additionalProperties": false,
             "required": ["data"]
+        },
+        {
+            "description": "Request to get eula",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["request"]},
+                "action": {"enum": ["get_eula"]},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "version": {"$ref": "#/definitions/eula_version"}
+                    },
+                    "additionalProperties": false,
+                    "required": ["version"]
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "description": "Reply to get eula",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["reply"]},
+                "action": {"enum": ["get_eula"]},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "version": {"$ref": "#/definitions/eula"},
+                        "text": {
+                            "oneOf": [
+                                {"type": "string"},
+                                {"type": "null"}
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["version", "text"]
+                }
+            },
+            "additionalProperties": false
         }
     ]
 }

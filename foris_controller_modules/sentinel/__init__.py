@@ -64,9 +64,22 @@ class SentinelModule(BaseModule):
         self.notify("update_fakepot_settings", data)
         return {"result": res}
 
+    def action_get_eula(self, data: dict):
+        """ Get configuration of sentinel
+        :param data: {} or {"version": X}
+        :returns: {"version": X, "text": "blahblah"}
+        """
+        return self.handler.get_eula(**data)
+
 
 @wrap_required_functions(
-    ["get_settings", "update_settings", "get_fakepot_settings", "update_fakepot_settings"]
+    [
+        "get_settings",
+        "update_settings",
+        "get_fakepot_settings",
+        "update_fakepot_settings",
+        "get_eula",
+    ]
 )
 class Handler(object):
     pass

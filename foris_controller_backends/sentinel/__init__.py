@@ -18,7 +18,10 @@
 #
 
 import logging
+import typing
+import csv
 
+from io import StringIO
 from secrets import token_hex
 
 from foris_controller_backends.files import BaseFile
@@ -41,18 +44,6 @@ class SentinelUci:
         with UciBackend() as backend:
             return backend.read("sentinel")
 
-    def _get_valid_eulas(self):
-        content = BaseFile()._file_content("/usr/share/sentinel-eula/EULAs.csv")
-        res = [0]
-
-        for line in content.splitlines(False):
-            try:
-                res.append(int(line.split(",")[0]))
-            except (ValueError, IndexError):
-                pass
-
-        return res
-
     def get_settings(self):
         data = self._read_uci()
         eula = int(get_option_named(data, "sentinel", "main", "agreed_with_eula_version", "0"))
@@ -61,7 +52,7 @@ class SentinelUci:
 
     def update_settings(self, eula, token=None):
 
-        valid_eulas = self._get_valid_eulas()
+        valid_eulas = [e[0] for e in SentinelEulas.get_valid_eulas()]
         if eula not in valid_eulas:
             data = self.get_settings()
             return False, data["eula"], None
@@ -109,3 +100,28 @@ class SentinelUci:
                 getattr(services, action)(service_name, fail_on_error=False)
 
         return True
+
+
+class SentinelEulas:
+    @staticmethod
+    def get_valid_eulas():
+        content = BaseFile()._file_content("/usr/share/sentinel-eula/EULAs.csv")
+        res = [(0, None)]
+
+        io = StringIO(content)
+        for version, path in csv.reader(io, delimiter=","):
+            try:
+                res.append((int(version), path.strip()))
+            except ValueError:
+                pass
+
+        return res
+
+    def get_eula(self, version: typing.Optional[int] = None) -> dict:
+        valid_eulas = dict(SentinelEulas.get_valid_eulas())
+        del valid_eulas[0]
+        if version is None:
+            version = max(e for e in valid_eulas.keys())
+
+        text = BaseFile()._file_content(valid_eulas[version]) if version in valid_eulas else None
+        return {"version": version, "text": text}

@@ -238,3 +238,29 @@ def test_update_settings_invalid_eula(
         {"module": "sentinel", "action": "get_settings", "kind": "request"}
     )
     assert res["data"]["eula"] == prev_eula
+
+
+def test_get_eula(file_root_init, infrastructure, uci_configs_init, start_buses):
+    res = infrastructure.process_message(
+        {"module": "sentinel", "action": "get_eula", "kind": "request"}
+    )
+    assert "data" in res
+    assert res["data"] == {"version": 2, "text": "Second version\n"}
+
+    res = infrastructure.process_message(
+        {"module": "sentinel", "action": "get_eula", "kind": "request", "data": {"version": 2}}
+    )
+    assert "data" in res
+    assert res["data"] == {"version": 2, "text": "Second version\n"}
+
+    res = infrastructure.process_message(
+        {"module": "sentinel", "action": "get_eula", "kind": "request", "data": {"version": 1}}
+    )
+    assert "data" in res
+    assert res["data"] == {"version": 1, "text": "First version\n"}
+
+    res = infrastructure.process_message(
+        {"module": "sentinel", "action": "get_eula", "kind": "request", "data": {"version": 99}}
+    )
+    assert "data" in res
+    assert res["data"] == {"version": 99, "text": None}

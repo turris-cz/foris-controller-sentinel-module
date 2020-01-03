@@ -32,7 +32,8 @@ logger = logging.getLogger(__name__)
 
 class MockSentinelHandler(Handler, BaseMockHandler):
 
-    valid_eulas: typing.List[int] = [0, 1, 2]
+    eulas: typing.Dict[int, str] = {1: "First version\n", 2: "Second version\n"}
+    valid_eulas: typing.List[int] = [0] + list(eulas.keys())
 
     eula: int = 0
     token: typing.Optional[str] = None
@@ -74,3 +75,9 @@ class MockSentinelHandler(Handler, BaseMockHandler):
         MockSentinelHandler.fakepot_enabled = enabled
         MockSentinelHandler.fakepot_extra_option = extra_option
         return True
+
+    @logger_wrapper(logger)
+    def get_eula(self, version: typing.Optional[int] = None) -> dict:
+        version = version or max(MockSentinelHandler.eulas.keys())
+
+        return {"version": version, "text": MockSentinelHandler.eulas.get(version)}

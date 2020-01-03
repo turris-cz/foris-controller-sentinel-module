@@ -23,7 +23,7 @@ import typing
 from foris_controller.handler_base import BaseOpenwrtHandler
 from foris_controller.utils import logger_wrapper
 
-from foris_controller_backends.sentinel import SentinelUci
+from foris_controller_backends.sentinel import SentinelUci, SentinelEulas
 
 from .. import Handler
 
@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 class OpenwrtSentinelHandler(Handler, BaseOpenwrtHandler):
 
     uci = SentinelUci()
+    eulas = SentinelEulas()
 
     @logger_wrapper(logger)
     def get_settings(self) -> dict:
@@ -51,3 +52,7 @@ class OpenwrtSentinelHandler(Handler, BaseOpenwrtHandler):
     @logger_wrapper(logger)
     def update_fakepot_settings(self, enabled: bool, extra_option: str) -> bool:
         return OpenwrtSentinelHandler.uci.update_fakepot_settings(enabled, extra_option)
+
+    @logger_wrapper(logger)
+    def get_eula(self, version: typing.Optional[int] = None) -> dict:
+        return OpenwrtSentinelHandler.eulas.get_eula(version)
