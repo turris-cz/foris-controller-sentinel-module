@@ -124,7 +124,7 @@
             "additionalProperties": false
         },
         {
-            "description": "Reply to obtain sentinel settings",
+            "description": "Reply to obtain fakepot settings",
             "properties": {
                 "module": {"enum": ["sentinel"]},
                 "kind": {"enum": ["reply"]},
@@ -162,7 +162,7 @@
             "required": ["data"]
         },
         {
-            "description": "Reply to update sentinel settings",
+            "description": "Reply to update fakepot settings",
             "properties": {
                 "module": {"enum": ["sentinel"]},
                 "kind": {"enum": ["reply"]},
@@ -180,7 +180,7 @@
             "required": ["data"]
         },
         {
-            "description": "Notification that sentinel settings was updated",
+            "description": "Notification that fakepot settings was updated",
             "properties": {
                 "module": {"enum": ["sentinel"]},
                 "kind": {"enum": ["notification"]},
