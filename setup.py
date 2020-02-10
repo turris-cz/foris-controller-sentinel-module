@@ -29,7 +29,7 @@ setup(
     name="foris-controller-sentinel-module",
     version=__version__,
     author="CZ.NIC, z.s.p.o. (http://www.nic.cz/)",
-    author_email="my.email@nic.cz",
+    author_email="packaging@turris.cz",
     packages=[
         "foris_controller_sentinel_module",
         "foris_controller_backends",
