@@ -20,6 +20,7 @@
 import logging
 import typing
 import csv
+import os
 
 from io import StringIO
 from secrets import token_hex
@@ -102,10 +103,18 @@ class SentinelUci:
         return True
 
 
+_EULAS_LIST = typing.List[typing.Tuple[int, typing.Optional[str]]]
+
+
 class SentinelEulas:
+    EULAS_PATH_PREFIX = "/usr/share/sentinel-eula"
+
     @staticmethod
-    def get_valid_eulas():
-        content = BaseFile()._file_content("/usr/share/sentinel-eula/EULAs.csv")
+    def get_valid_eulas() -> _EULAS_LIST:
+        content = BaseFile()._file_content(
+            os.path.join(SentinelEulas.EULAS_PATH_PREFIX, "EULAs.csv")
+        )
+
         res = [(0, None)]
 
         io = StringIO(content)
@@ -117,11 +126,17 @@ class SentinelEulas:
 
         return res
 
-    def get_eula(self, version: typing.Optional[int] = None) -> dict:
+    @staticmethod
+    def get_eula(version: typing.Optional[int] = None) -> dict:
+        text = None
         valid_eulas = dict(SentinelEulas.get_valid_eulas())
         del valid_eulas[0]
         if version is None:
             version = max(e for e in valid_eulas.keys())
 
-        text = BaseFile()._file_content(valid_eulas[version]) if version in valid_eulas else None
+        if version in valid_eulas:
+            text = BaseFile()._file_content(
+                os.path.join(SentinelEulas.EULAS_PATH_PREFIX, valid_eulas[version])
+            )
+
         return {"version": version, "text": text}
