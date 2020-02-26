@@ -1,6 +1,6 @@
 #
 # foris-controller-sentinel-module
-# Copyright (C) 2019 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2019-2020 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,16 +26,7 @@ from io import StringIO
 from secrets import token_hex
 
 from foris_controller_backends.files import BaseFile
-from foris_controller_backends.services import OpenwrtServices
 from foris_controller_backends.uci import UciBackend, get_option_named, parse_bool, store_bool
-
-
-SENTINEL_MODULES = {
-    "fakepot": {
-        "hooks": [("sentinel", "reload"), ("sentinel", "restart")],
-        "updater_flag": "fakepot",
-    }
-}
 
 logger = logging.getLogger(__name__)
 
@@ -75,9 +66,6 @@ class SentinelUci:
             if token:
                 backend.set_option("sentinel", "main", "device_token", token)
 
-        with OpenwrtServices() as services:
-            services.restart("sentinel")
-
         return True, eula, token if eula != 0 else None
 
     def get_fakepot_settings(self) -> dict:
@@ -93,12 +81,6 @@ class SentinelUci:
             backend.add_section("sentinel", "fakepot", "fakepot")
             backend.set_option("sentinel", "fakepot", "enabled", store_bool(enabled))
             backend.set_option("sentinel", "fakepot", "extra_option", extra_option)
-
-        with OpenwrtServices() as services:
-            for service_name, action in SENTINEL_MODULES["fakepot"]["hooks"]:
-                # try to perform an action (might not work if the fakepot is
-                # currently being installed
-                getattr(services, action)(service_name, fail_on_error=False)
 
         return True
 
