@@ -35,7 +35,7 @@ from foris_controller_testtools.fixtures import (
     UCI_CONFIG_DIR_PATH,
 )
 
-from foris_controller_testtools.utils import get_uci_module
+from foris_controller_testtools.utils import get_uci_module, command_was_called
 
 
 def test_get_settings(file_root_init, infrastructure, uci_configs_init, start_buses):
@@ -123,6 +123,8 @@ def test_update_settings_openwrt(
     res = infrastructure.process_message(
         {"module": "sentinel", "action": "update_settings", "kind": "request", "data": {"eula": 1}}
     )
+    assert command_was_called(["sentinel-reload"])
+
     res = infrastructure.process_message(
         {"module": "sentinel", "action": "get_settings", "kind": "request"}
     )
@@ -143,6 +145,7 @@ def test_update_settings_openwrt(
             "data": {"eula": 2, "token": token},
         }
     )
+    assert command_was_called(["sentinel-reload"])
 
     with uci.UciBackend(UCI_CONFIG_DIR_PATH) as uci_backend:
         data = uci_backend.read()

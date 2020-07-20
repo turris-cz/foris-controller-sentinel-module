@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+basename "$0" >> /tmp/command_called
+echo PASS
+exit 0

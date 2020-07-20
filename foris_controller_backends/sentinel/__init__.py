@@ -25,6 +25,7 @@ import os
 from io import StringIO
 from secrets import token_hex
 
+from foris_controller_backends.cmdline import BaseCmdLine
 from foris_controller_backends.files import BaseFile
 from foris_controller_backends.uci import UciBackend, get_option_named, parse_bool, store_bool
 
@@ -65,6 +66,9 @@ class SentinelUci:
 
             if token:
                 backend.set_option("sentinel", "main", "device_token", token)
+
+            # Reload sentinel components
+            BaseCmdLine._run_command_and_check_retval(["/usr/bin/sentinel-reload"], 0)
 
         return True, eula, token if eula != 0 else None
 
