@@ -67,8 +67,8 @@ class SentinelUci:
             if token:
                 backend.set_option("sentinel", "main", "device_token", token)
 
-            # Reload sentinel components
-            BaseCmdLine._run_command_and_check_retval(["/usr/bin/sentinel-reload"], 0)
+        # Reload sentinel components
+        BaseCmdLine._run_command_and_check_retval(["/usr/bin/sentinel-reload"], 0)
 
         return True, eula, token if eula != 0 else None
 
