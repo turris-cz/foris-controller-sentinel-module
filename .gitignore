@@ -1,0 +1,4 @@
+.*
+~*
+**/__pycache__/**
+foris_controller_sentinel_module.egg-info/

@@ -1,6 +1,6 @@
 #
 # foris-controller-sentinel-module
-# Copyright (C) 2019 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2019-2021 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,9 +41,11 @@ class OpenwrtSentinelHandler(Handler, BaseOpenwrtHandler):
 
     @logger_wrapper(logger)
     def update_settings(
-        self, eula: int, token: typing.Optional[str] = None
+        self, eula: int, token: typing.Optional[str] = None,
+        modules: typing.Optional[typing.Dict[str,bool]] = None,
+        protocols: typing.Optional[typing.Dict[str,bool]] = None
     ) -> typing.Tuple[bool, int, typing.Optional[str]]:
-        return OpenwrtSentinelHandler.uci.update_settings(eula, token)
+        return OpenwrtSentinelHandler.uci.update_settings(eula, modules, protocols, token)
 
     @logger_wrapper(logger)
     def get_fakepot_settings(self) -> dict:

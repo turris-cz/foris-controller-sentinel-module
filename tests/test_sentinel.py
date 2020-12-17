@@ -1,6 +1,6 @@
 #
 # foris-controller-sentinel-module
-# Copyright (C) 2019 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2019-2021 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,6 +43,8 @@ def test_get_settings(file_root_init, infrastructure, uci_configs_init):
     assert "data" in res
     assert "eula" in res["data"]
     assert "token" in res["data"]
+    assert {"minipot", "nikola", "survey"} == res["data"]["modules"].keys()
+    assert {"ftp", "http", "smtp", "telnet"} == res["data"]["protocols"].keys()
 
 
 def test_update_settings(
@@ -260,3 +262,56 @@ def test_get_eula(file_root_init, infrastructure, uci_configs_init):
     )
     assert "data" in res
     assert res["data"] == {"version": 99, "text": None}
+
+
+@pytest.mark.only_backends(["openwrt"])
+def test_get_than_update(
+    file_root_init, infrastructure, init_script_result, uci_configs_init
+):
+    uci = get_uci_module(infrastructure.name)
+
+    # initialize sentinel
+    res = infrastructure.process_message(
+        {"module": "sentinel", "action": "update_settings", "kind": "request", "data": {"eula": 1}}
+    )
+    # get default settings
+    assert "errors" not in res.keys()
+    res = infrastructure.process_message(
+        {"module": "sentinel", "action": "get_settings", "kind": "request"}
+    )
+    token = res["data"]["token"]
+
+    # modules are on true by default, change some
+    modules = res["data"]["modules"]
+    modules["nikola"] = False
+
+    # protocols are on by defualt, turn some off
+    protocols = res["data"]["protocols"]
+    protocols["http"] = False
+    protocols["telnet"] = False
+
+    # update settings
+    res = infrastructure.process_message(
+        {"module": "sentinel", "action": "update_settings", "kind": "request", "data": {
+            "token": token,
+            "eula": 1,
+            "modules": modules,
+            "protocols": protocols
+        }}
+    )
+    assert "errors" not in res.keys()
+
+    with uci.UciBackend(UCI_CONFIG_DIR_PATH) as uci_backend:
+        data = uci_backend.read()
+    
+    assert uci.get_option_named(data, "sentinel", "minipot", "http_port", "") == "0"
+    assert uci.get_option_named(data, "sentinel", "minipot", "telnet_port", "") == "0"
+
+    # assert changes applied
+    res = infrastructure.process_message(
+        {"module": "sentinel", "action": "get_settings", "kind": "request"}
+    )
+    assert "errors" not in res.keys()
+    assert res["data"]["modules"]["nikola"] is False
+    assert res["data"]["protocols"]["http"] is False
+    assert res["data"]["protocols"]["telnet"] is False

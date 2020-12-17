@@ -1,6 +1,6 @@
 #
 # foris-controller-sentinel-module
-# Copyright (C) 2019 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2019-2021 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,14 +39,32 @@ class MockSentinelHandler(Handler, BaseMockHandler):
     token: typing.Optional[str] = None
     fakepot_enabled: bool = False
     fakepot_extra_option: str = ""
+    fake_modules: dict = {
+        "minipot": True,
+        "nikola": True,
+        "survey": True
+    }
+    fake_protocols: dict = {
+        "ftp": True,
+        "http": True,
+        "smtp": False,
+        "telnet": False
+    }
 
     @logger_wrapper(logger)
     def get_settings(self) -> dict:
-        return {"eula": MockSentinelHandler.eula, "token": MockSentinelHandler.token}
+        return {
+            "eula": MockSentinelHandler.eula,
+            "token": MockSentinelHandler.token,
+            "modules": MockSentinelHandler.fake_modules,
+            "protocols": MockSentinelHandler.fake_protocols
+        }
 
     @logger_wrapper(logger)
     def update_settings(
-        self, eula: int, token: typing.Optional[str] = None
+        self, eula: int, token: typing.Optional[str] = None,
+        modules: typing.Optional[typing.Dict[str,bool]] = None,
+        protocols: typing.Optional[typing.Dict[str,bool]] = None
     ) -> typing.Tuple[bool, int, typing.Optional[str]]:
         if eula not in MockSentinelHandler.valid_eulas:
             return False, MockSentinelHandler.eula, None

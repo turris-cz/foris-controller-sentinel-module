@@ -8,6 +8,29 @@
                 {"$ref": "#/definitions/eula_version"},
                 {"$ref": "#/definitions/eula_disabled"}
             ]
+        },
+        "sentinel_modules": {
+            "type": "object",
+            "description": "Enabled sentinel modules",
+            "properties": {
+                "minipot": {"type": "boolean"},
+                "nikola": {"type": "boolean"},
+                "survey": {"type": "boolean"}
+            },
+            "additionalProperties": false,
+            "required": ["minipot", "nikola", "survey"]
+        },
+        "minipot_protocols": {
+            "type": "object",
+            "description": "Enabled minipot protocols",
+            "properties": {
+                "ftp": {"type": "boolean"},
+                "http": {"type": "boolean"},
+                "smtp": {"type": "boolean"},
+                "telnet": {"type": "boolean"}
+            },
+            "additionalProperties": false,
+            "required": ["ftp", "http", "smtp", "telnet"]
         }
     },
     "oneOf": [
@@ -35,10 +58,12 @@
                                 {"$ref": "#/definitions/sentinel_token"},
                                 {"enum": [null]}
                             ]
-                        }
+                        },
+                        "modules": {"$ref": "#/definitions/sentinel_modules"},
+                        "protocols": {"$ref": "#/definitions/minipot_protocols"}
                     },
                     "additionalProperties": false,
-                    "required": ["eula", "token"]
+                    "required": ["eula", "token", "modules", "protocols"]
                 }
             },
             "additionalProperties": false,
@@ -54,7 +79,9 @@
                     "type": "object",
                     "properties": {
                         "eula": {"$ref": "#/definitions/eula"},
-                        "token": {"$ref": "#/definitions/sentinel_token"}
+                        "token": {"$ref": "#/definitions/sentinel_token"},
+                        "modules": {"$ref": "#/definitions/sentinel_modules"},
+                        "protocols": {"$ref": "#/definitions/minipot_protocols"}
                     },
                     "additionalProperties": false,
                     "required": ["eula"]

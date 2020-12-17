@@ -1,6 +1,6 @@
 #
 # foris-controller-sentinel-module
-# Copyright (C) 2019-2020 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2019-2021 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,12 +27,15 @@ from secrets import token_hex
 
 from foris_controller_backends.cmdline import BaseCmdLine
 from foris_controller_backends.files import BaseFile
-from foris_controller_backends.uci import UciBackend, get_option_named, parse_bool, store_bool
+from foris_controller_backends.uci import UciBackend, get_option_named, parse_bool, store_bool, UciException
 
 logger = logging.getLogger(__name__)
 
 
 class SentinelUci:
+    _MINIPOT_PROTOCOLS = ["ftp", "http", "smtp", "telnet"]
+    _SENTINEL_MODULES = ["minipot", "nikola", "survey"]
+
     def _read_uci(self):
         with UciBackend() as backend:
             return backend.read("sentinel")
@@ -41,9 +44,24 @@ class SentinelUci:
         data = self._read_uci()
         eula = int(get_option_named(data, "sentinel", "main", "agreed_with_eula_version", "0"))
         token = get_option_named(data, "sentinel", "main", "device_token", "") or None
-        return {"eula": eula, "token": token}
 
-    def update_settings(self, eula, token=None):
+        modules = {
+            sentinel_module : parse_bool(get_option_named(data, "sentinel", sentinel_module, "enabled", "1"))
+            for sentinel_module in SentinelUci._SENTINEL_MODULES
+        }
+        protocols = {
+            protocol : False if get_option_named(data, "sentinel", "minipot", f"{protocol}_port", "1") == "0" else True
+            for protocol in SentinelUci._MINIPOT_PROTOCOLS
+        }
+
+        return {
+            "eula": eula,
+            "token": token,
+            "modules": modules,
+            "protocols": protocols
+        }
+
+    def update_settings(self, eula, modules=None, protocols=None, token=None):
 
         valid_eulas = [e[0] for e in SentinelEulas.get_valid_eulas()]
         if eula not in valid_eulas:
@@ -66,6 +84,22 @@ class SentinelUci:
 
             if token:
                 backend.set_option("sentinel", "main", "device_token", token)
+
+            if modules is not None:
+                for module in SentinelUci._SENTINEL_MODULES:
+                    backend.add_section("sentinel", module, module)
+                    backend.set_option("sentinel", module, "enabled", store_bool(modules[module]))
+
+            if protocols is not None:
+                for protocol in SentinelUci._MINIPOT_PROTOCOLS:
+                    if protocols[protocol]:
+                        try:
+                            backend.del_option("sentinel", "minipot", f"{protocol}_port")
+                        except UciException:
+                            pass
+                    else:
+                        backend.set_option("sentinel", "minipot", f"{protocol}_port", "0")
+
 
         # Reload sentinel components
         BaseCmdLine._run_command_and_check_retval(["/usr/bin/sentinel-reload"], 0)
