@@ -1,6 +1,6 @@
 #
 # foris-controller-sentinel-module
-# Copyright (C) 2019 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2019-2021 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +45,10 @@ setup(
     install_requires=[
         "foris-controller @ git+https://gitlab.nic.cz/turris/foris-controller/foris-controller.git"
     ],
-    setup_requires=["pytest-runner"],
+    setup_requires=[
+        "pytest-runner",
+        "flake8"
+    ],
     tests_require=["pytest", "foris-controller-testtools", "foris-client", "ubus", "paho-mqtt"],
     dependency_links=[
         "git+https://gitlab.nic.cz/turris/foris-controller/foris-controller-testtools.git#egg=foris-controller-testtools",
