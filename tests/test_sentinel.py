@@ -59,10 +59,10 @@ def test_update_settings(
     )
     notifications = infrastructure.get_notifications(notifications, filters=filters)
     assert notifications[-1] == {
-        u"module": "sentinel",
-        u"action": "update_settings",
-        u"kind": "notification",
-        u"data": {"eula": 1},
+        "module": "sentinel",
+        "action": "update_settings",
+        "kind": "notification",
+        "data": {"eula": 1},
     }
     res = infrastructure.process_message(
         {"module": "sentinel", "action": "get_settings", "kind": "request"}
@@ -77,10 +77,10 @@ def test_update_settings(
     )
     notifications = infrastructure.get_notifications(notifications, filters=filters)
     assert notifications[-1] == {
-        u"module": "sentinel",
-        u"action": "update_settings",
-        u"kind": "notification",
-        u"data": {"eula": 0},
+        "module": "sentinel",
+        "action": "update_settings",
+        "kind": "notification",
+        "data": {"eula": 0},
     }
     res = infrastructure.process_message(
         {"module": "sentinel", "action": "get_settings", "kind": "request"}
@@ -100,10 +100,10 @@ def test_update_settings(
     )
     notifications = infrastructure.get_notifications(notifications, filters=filters)
     assert notifications[-1] == {
-        u"module": "sentinel",
-        u"action": "update_settings",
-        u"kind": "notification",
-        u"data": {"eula": 1},
+        "module": "sentinel",
+        "action": "update_settings",
+        "kind": "notification",
+        "data": {"eula": 1},
     }
     res = infrastructure.process_message(
         {"module": "sentinel", "action": "get_settings", "kind": "request"}
@@ -178,10 +178,10 @@ def test_update_fakepot_settings(
     )
     notifications = infrastructure.get_notifications(notifications, filters=filters)
     assert notifications[-1] == {
-        u"module": "sentinel",
-        u"action": "update_fakepot_settings",
-        u"kind": "notification",
-        u"data": {"enabled": True, "extra_option": "first"},
+        "module": "sentinel",
+        "action": "update_fakepot_settings",
+        "kind": "notification",
+        "data": {"enabled": True, "extra_option": "first"},
     }
     res = infrastructure.process_message(
         {"module": "sentinel", "action": "get_fakepot_settings", "kind": "request"}
