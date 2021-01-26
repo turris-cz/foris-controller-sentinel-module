@@ -100,7 +100,6 @@ class SentinelUci:
                     else:
                         backend.set_option("sentinel", "minipot", f"{protocol}_port", "0")
 
-
         # Reload sentinel components
         BaseCmdLine._run_command_and_check_retval(["/usr/bin/sentinel-reload"], 0)
 
