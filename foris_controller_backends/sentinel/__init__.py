@@ -27,7 +27,8 @@ from secrets import token_hex
 
 from foris_controller_backends.cmdline import BaseCmdLine
 from foris_controller_backends.files import BaseFile
-from foris_controller_backends.uci import UciBackend, get_option_named, parse_bool, store_bool, UciException
+from foris_controller_backends.uci import UciBackend, get_option_named, parse_bool, store_bool
+from foris_controller_backends.updater import Updater
 
 logger = logging.getLogger(__name__)
 
@@ -45,23 +46,35 @@ class SentinelUci:
         eula = int(get_option_named(data, "sentinel", "main", "agreed_with_eula_version", "0"))
         token = get_option_named(data, "sentinel", "main", "device_token", "") or None
 
+        # Do not need correct language version for this purpose
+        packages_lists = Updater.get_package_lists("en")
+        datacollect = list(filter(lambda x: x["name"] == "datacollect", packages_lists))
+        packages = datacollect[0]["options"]
         modules = {
-            sentinel_module : parse_bool(get_option_named(data, "sentinel", sentinel_module, "enabled", "1"))
-            for sentinel_module in SentinelUci._SENTINEL_MODULES
+            pkg["name"]: {
+                "installed": pkg["enabled"],
+                "enabled": parse_bool(get_option_named(data, "sentinel", pkg["name"], "enabled", "1"))
+            } for pkg in packages
         }
+
+        # haas, dynfw not yet supported to configure
+        modules.pop("haas")
+        modules.pop("dynfw")
+
         protocols = {
             protocol : False if get_option_named(data, "sentinel", "minipot", f"{protocol}_port", "1") == "0" else True
             for protocol in SentinelUci._MINIPOT_PROTOCOLS
         }
 
+        modules["minipot"]["protocols"] = protocols
+
         return {
             "eula": eula,
             "token": token,
-            "modules": modules,
-            "protocols": protocols
+            "modules": modules
         }
 
-    def update_settings(self, eula, modules=None, protocols=None, token=None):
+    def update_settings(self, eula, modules=None, token=None):
 
         valid_eulas = [e[0] for e in SentinelEulas.get_valid_eulas()]
         if eula not in valid_eulas:
@@ -87,16 +100,18 @@ class SentinelUci:
 
             if modules is not None:
                 for module in SentinelUci._SENTINEL_MODULES:
-                    backend.add_section("sentinel", module, module)
-                    backend.set_option("sentinel", module, "enabled", store_bool(modules[module]))
+                    if modules[module]:
+                        backend.add_section("sentinel", module, module)
+                        backend.set_option("sentinel", module, "enabled", store_bool(modules[module]["enabled"]))
 
-            if protocols is not None:
+                protocols = modules["minipot"]["protocols"]
                 for protocol in SentinelUci._MINIPOT_PROTOCOLS:
+                    """The logic of protocols is following:
+    - no entry means that service is activated,
+    - number value is non-default port number
+    - `0` is to disable the service """
                     if protocols[protocol]:
-                        try:
-                            backend.del_option("sentinel", "minipot", f"{protocol}_port")
-                        except UciException:
-                            pass
+                        backend.del_option("sentinel", "minipot", f"{protocol}_port", fail_on_error=False)
                     else:
                         backend.set_option("sentinel", "minipot", f"{protocol}_port", "0")
 

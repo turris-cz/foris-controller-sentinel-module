@@ -29,13 +29,17 @@ from foris_controller_testtools.fixtures import (
     only_backends,
     uci_configs_init,
     notify_api,
+    updater_userlists,
+    updater_languages,
     UCI_CONFIG_DIR_PATH,
 )
 
 from foris_controller_testtools.utils import get_uci_module, command_was_called
+from foris_controller_testtools.fixtures import device, turris_os_version
 
 
-def test_get_settings(file_root_init, infrastructure, uci_configs_init):
+@pytest.mark.parametrize('device,turris_os_version', [("mox", "4.0")], indirect=True)
+def test_get_settings(updater_userlists, updater_languages, file_root_init, infrastructure, uci_configs_init, device, turris_os_version):
     res = infrastructure.process_message(
         {"module": "sentinel", "action": "get_settings", "kind": "request"}
     )
@@ -44,11 +48,11 @@ def test_get_settings(file_root_init, infrastructure, uci_configs_init):
     assert "eula" in res["data"]
     assert "token" in res["data"]
     assert {"minipot", "nikola", "survey"} == res["data"]["modules"].keys()
-    assert {"ftp", "http", "smtp", "telnet"} == res["data"]["protocols"].keys()
+    assert {"ftp", "http", "smtp", "telnet"} == res["data"]["modules"]["minipot"]["protocols"].keys()
 
 
 def test_update_settings(
-    file_root_init, infrastructure, init_script_result, uci_configs_init
+    file_root_init, infrastructure, init_script_result, uci_configs_init, updater_userlists, updater_languages
 ):
     filters = [("sentinel", "update_settings")]
 
@@ -114,7 +118,7 @@ def test_update_settings(
 
 @pytest.mark.only_backends(["openwrt"])
 def test_update_settings_openwrt(
-    file_root_init, infrastructure, init_script_result, uci_configs_init
+    updater_userlists, updater_languages, file_root_init, infrastructure, init_script_result, uci_configs_init
 ):
     uci = get_uci_module(infrastructure.name)
 
@@ -213,7 +217,7 @@ def test_update_fakepot_settings_openwrt(
 
 
 def test_update_settings_invalid_eula(
-    file_root_init, infrastructure, init_script_result, uci_configs_init
+    updater_userlists, updater_languages, file_root_init, infrastructure, init_script_result, uci_configs_init
 ):
 
     res = infrastructure.process_message(
@@ -266,7 +270,7 @@ def test_get_eula(file_root_init, infrastructure, uci_configs_init):
 
 @pytest.mark.only_backends(["openwrt"])
 def test_get_than_update(
-    file_root_init, infrastructure, init_script_result, uci_configs_init
+    updater_userlists, updater_languages, file_root_init, infrastructure, init_script_result, uci_configs_init
 ):
     uci = get_uci_module(infrastructure.name)
 
@@ -283,27 +287,31 @@ def test_get_than_update(
 
     # modules are on true by default, change some
     modules = res["data"]["modules"]
-    modules["nikola"] = False
+    modules["nikola"]["enabled"] = False
 
     # protocols are on by defualt, turn some off
-    protocols = res["data"]["protocols"]
+    protocols = res["data"]["modules"]["minipot"]["protocols"]
     protocols["http"] = False
     protocols["telnet"] = False
+    modules["minipot"]["protocols"] = protocols
+
+    # you won't need to get installed status from UI
+    for _, data in modules.items():
+        data.pop("installed")
 
     # update settings
     res = infrastructure.process_message(
         {"module": "sentinel", "action": "update_settings", "kind": "request", "data": {
             "token": token,
             "eula": 1,
-            "modules": modules,
-            "protocols": protocols
+            "modules": modules
         }}
     )
     assert "errors" not in res.keys()
 
     with uci.UciBackend(UCI_CONFIG_DIR_PATH) as uci_backend:
         data = uci_backend.read()
-    
+
     assert uci.get_option_named(data, "sentinel", "minipot", "http_port", "") == "0"
     assert uci.get_option_named(data, "sentinel", "minipot", "telnet_port", "") == "0"
 
@@ -312,6 +320,7 @@ def test_get_than_update(
         {"module": "sentinel", "action": "get_settings", "kind": "request"}
     )
     assert "errors" not in res.keys()
-    assert res["data"]["modules"]["nikola"] is False
-    assert res["data"]["protocols"]["http"] is False
-    assert res["data"]["protocols"]["telnet"] is False
+    assert res["data"]["modules"]["nikola"]["enabled"] is False
+    minipot_prot = res["data"]["modules"]["minipot"]["protocols"]
+    assert minipot_prot["http"] is False
+    assert minipot_prot["telnet"] is False

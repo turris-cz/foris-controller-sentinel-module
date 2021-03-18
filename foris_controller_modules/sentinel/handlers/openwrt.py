@@ -42,10 +42,9 @@ class OpenwrtSentinelHandler(Handler, BaseOpenwrtHandler):
     @logger_wrapper(logger)
     def update_settings(
         self, eula: int, token: typing.Optional[str] = None,
-        modules: typing.Optional[typing.Dict[str,bool]] = None,
-        protocols: typing.Optional[typing.Dict[str,bool]] = None
+        modules: typing.Optional[typing.Dict[str,typing.Union[bool,typing.Dict[str,bool]]]] = None
     ) -> typing.Tuple[bool, int, typing.Optional[str]]:
-        return OpenwrtSentinelHandler.uci.update_settings(eula, modules, protocols, token)
+        return OpenwrtSentinelHandler.uci.update_settings(eula, modules, token)
 
     @logger_wrapper(logger)
     def get_fakepot_settings(self) -> dict:

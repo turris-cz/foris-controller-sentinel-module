@@ -39,16 +39,26 @@ class MockSentinelHandler(Handler, BaseMockHandler):
     token: typing.Optional[str] = None
     fakepot_enabled: bool = False
     fakepot_extra_option: str = ""
-    fake_modules: dict = {
-        "minipot": True,
-        "nikola": True,
-        "survey": True
-    }
-    fake_protocols: dict = {
-        "ftp": True,
-        "http": True,
-        "smtp": False,
-        "telnet": False
+    fake_modules: typing.Dict[str,typing.Union[bool, typing.Dict[str, bool]]] = {
+        "minipot": {
+            "enabled": True,
+            "installed": True,
+            "protocols": {
+                "ftp": True,
+                "http": True,
+                "smtp": False,
+                "telnet": False
+            }
+        },
+        "nikola": {
+            "enabled": True,
+            "installed": True
+        },
+        "survey": {
+            "enabled": True,
+            "installed": True
+        }
+
     }
 
     @logger_wrapper(logger)
@@ -56,8 +66,7 @@ class MockSentinelHandler(Handler, BaseMockHandler):
         return {
             "eula": MockSentinelHandler.eula,
             "token": MockSentinelHandler.token,
-            "modules": MockSentinelHandler.fake_modules,
-            "protocols": MockSentinelHandler.fake_protocols
+            "modules": MockSentinelHandler.fake_modules
         }
 
     @logger_wrapper(logger)

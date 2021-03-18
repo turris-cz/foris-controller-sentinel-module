@@ -9,16 +9,28 @@
                 {"$ref": "#/definitions/eula_disabled"}
             ]
         },
-        "sentinel_modules": {
+        "standard_modules_get": {
             "type": "object",
-            "description": "Enabled sentinel modules",
             "properties": {
-                "minipot": {"type": "boolean"},
-                "nikola": {"type": "boolean"},
-                "survey": {"type": "boolean"}
+                "enabled": {
+                    "type": "boolean"
+                },
+                "installed": {
+                    "type": "boolean"
+                }
             },
             "additionalProperties": false,
-            "required": ["minipot", "nikola", "survey"]
+            "required": ["enabled", "installed"]
+        },
+        "standard_modules_set": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "required": ["enabled"]
         },
         "minipot_protocols": {
             "type": "object",
@@ -31,6 +43,45 @@
             },
             "additionalProperties": false,
             "required": ["ftp", "http", "smtp", "telnet"]
+        },
+        "sentinel_modules_get": {
+            "type": "object",
+            "description": "Getting configurable sentinel modules",
+            "properties": {
+                "minipot": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {"type": "boolean"},
+                        "installed": {"type": "boolean"},
+                        "protocols": {"$ref": "#/definitions/minipot_protocols"}
+                    },
+                    "additionalProperties": false,
+                    "required": ["enabled", "protocols", "installed"]
+                },
+                "nikola": {"$ref": "#/definitions/standard_modules_get"},
+                "survey": {"$ref": "#/definitions/standard_modules_get"}
+            },
+            "additionalProperties": false,
+            "required": ["minipot", "nikola", "survey"]
+        },
+        "sentinel_modules_set": {
+            "type": "object",
+            "description": "Setting configurable sentinel modules",
+            "properties": {
+                "minipot": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {"type": "boolean"},
+                        "protocols": {"$ref": "#/definitions/minipot_protocols"}
+                    },
+                    "additionalProperties": false,
+                    "required": ["enabled", "protocols"]
+                },
+                "nikola": {"$ref": "#/definitions/standard_modules_set"},
+                "survey": {"$ref": "#/definitions/standard_modules_set"}
+            },
+            "additionalProperties": false,
+            "requred": ["minipot", "nikola", "survey"]
         }
     },
     "oneOf": [
@@ -59,11 +110,10 @@
                                 {"enum": [null]}
                             ]
                         },
-                        "modules": {"$ref": "#/definitions/sentinel_modules"},
-                        "protocols": {"$ref": "#/definitions/minipot_protocols"}
+                        "modules": {"$ref": "#/definitions/sentinel_modules_get"}
                     },
                     "additionalProperties": false,
-                    "required": ["eula", "token", "modules", "protocols"]
+                    "required": ["eula", "token", "modules"]
                 }
             },
             "additionalProperties": false,
@@ -80,8 +130,7 @@
                     "properties": {
                         "eula": {"$ref": "#/definitions/eula"},
                         "token": {"$ref": "#/definitions/sentinel_token"},
-                        "modules": {"$ref": "#/definitions/sentinel_modules"},
-                        "protocols": {"$ref": "#/definitions/minipot_protocols"}
+                        "modules": {"$ref": "#/definitions/sentinel_modules_set"}
                     },
                     "additionalProperties": false,
                     "required": ["eula"]
