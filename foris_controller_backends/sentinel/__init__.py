@@ -21,11 +21,12 @@ import logging
 import typing
 import csv
 import os
+import re
 
 from io import StringIO
 from secrets import token_hex
 
-from foris_controller_backends.cmdline import BaseCmdLine
+from foris_controller_backends.cmdline import BaseCmdLine, BackendCommandFailed
 from foris_controller_backends.files import BaseFile
 from foris_controller_backends.uci import UciBackend, get_option_named, parse_bool, store_bool
 from foris_controller_backends.updater import Updater
@@ -135,6 +136,45 @@ class SentinelUci:
             backend.set_option("sentinel", "fakepot", "extra_option", extra_option)
 
         return True
+
+
+class SentinelStatus(BaseCmdLine):
+    """ Class used for querying status of sentinel and it's components """
+    _COMPONENTS = {
+        "FWLogs": "fwlogs",
+        "Minipot": "minipot",
+        "Turris Survey": "survey",
+        "Server Connection": "proxy",
+    }
+    _STATES = {
+        "DISABLED": "disabled",
+        "FAILED": "failed",
+        "RUNNING": "running",
+        "SENDING": "sending",
+        "UNKNOWN": "unknown",
+    }
+
+    def get_state(self) -> typing.Dict[str, str]:
+        """ Return state of sentinel components """
+        # fill in default values
+        state = {component: "uninstalled" for component in self._COMPONENTS.values()}
+
+        try:
+            out, _ = self._run_command_and_check_retval(["/usr/bin/sentinel-status"], 0)
+        except BackendCommandFailed:
+            return state
+
+        lines = out.decode("utf8").strip().split("\n")
+        for line in lines:
+            match = re.match(r"^([a-zA-Z ]+): ([a-zA-Z]+)$", line)
+            if match:
+                component = match.group(1)
+                status = match.group(2)
+
+                if component in self._COMPONENTS:
+                    state[self._COMPONENTS[component]] = self._STATES.get(status, "unknown")
+
+        return state
 
 
 _EULAS_LIST = typing.List[typing.Tuple[int, typing.Optional[str]]]

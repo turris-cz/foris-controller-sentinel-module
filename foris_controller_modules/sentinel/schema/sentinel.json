@@ -1,6 +1,7 @@
 {
     "definitions": {
         "sentinel_token": {"type": "string", "pattern": "^[a-z0-9]{64}$"},
+        "sentinel_service_state": {"enum": ["disabled", "failed", "running", "sending", "unknown", "uninstalled"]},
         "eula_version": {"type": "number", "minimum": 1},
         "eula_disabled": {"enum": [0]},
         "eula": {
@@ -310,6 +311,35 @@
                     },
                     "additionalProperties": false,
                     "required": ["version", "text"]
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "description": "Request to get sentinel components state",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["request"]},
+                "action": {"enum": ["get_state"]}
+            },
+            "additionalProperties": false
+        },
+        {
+            "description": "Reply to get sentinel components state",
+            "properties": {
+                "module": {"enum": ["sentinel"]},
+                "kind": {"enum": ["reply"]},
+                "action": {"enum": ["get_state"]},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "fwlogs": {"$ref": "#/definitions/sentinel_service_state"},
+                        "minipot": {"$ref": "#/definitions/sentinel_service_state"},
+                        "survey": {"$ref": "#/definitions/sentinel_service_state"},
+                        "proxy": {"$ref": "#/definitions/sentinel_service_state"}
+                    },
+                    "additionalProperties": false,
+                    "required": ["fwlogs", "minipot", "survey", "proxy"]
                 }
             },
             "additionalProperties": false

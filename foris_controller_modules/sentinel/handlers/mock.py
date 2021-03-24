@@ -108,3 +108,13 @@ class MockSentinelHandler(Handler, BaseMockHandler):
         version = version or max(MockSentinelHandler.eulas.keys())
 
         return {"version": version, "text": MockSentinelHandler.eulas.get(version)}
+
+    @staticmethod
+    @logger_wrapper(logger)
+    def get_state() -> typing.Dict[str, str]:
+        return {
+            "fwlogs": "running",
+            "survey": "running",
+            "minipot": "running",
+            "proxy": "running",
+        }

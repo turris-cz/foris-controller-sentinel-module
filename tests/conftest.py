@@ -1,6 +1,6 @@
 #
 # foris-controller-sentinel-module
-# Copyright (C) 2019 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2019-2021 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,6 +30,8 @@ from foris_controller_testtools.fixtures import (
     message_bus,
     backend,
 )
+
+CMDLINE_SCRIPT_ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_root")
 
 
 @pytest.fixture(scope="session")

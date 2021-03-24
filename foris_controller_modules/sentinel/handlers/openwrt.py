@@ -23,7 +23,7 @@ import typing
 from foris_controller.handler_base import BaseOpenwrtHandler
 from foris_controller.utils import logger_wrapper
 
-from foris_controller_backends.sentinel import SentinelUci, SentinelEulas
+from foris_controller_backends.sentinel import SentinelStatus, SentinelUci, SentinelEulas
 
 from .. import Handler
 
@@ -34,6 +34,7 @@ class OpenwrtSentinelHandler(Handler, BaseOpenwrtHandler):
 
     uci = SentinelUci()
     eulas = SentinelEulas()
+    status = SentinelStatus()
 
     @logger_wrapper(logger)
     def get_settings(self) -> dict:
@@ -57,3 +58,9 @@ class OpenwrtSentinelHandler(Handler, BaseOpenwrtHandler):
     @logger_wrapper(logger)
     def get_eula(self, version: typing.Optional[int] = None) -> dict:
         return OpenwrtSentinelHandler.eulas.get_eula(version)
+
+    @staticmethod
+    @logger_wrapper(logger)
+    def get_state() -> typing.Dict[str, str]:
+        """ Get state of sentinel components """
+        return OpenwrtSentinelHandler.status.get_state()
