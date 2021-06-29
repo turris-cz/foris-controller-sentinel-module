@@ -83,7 +83,7 @@ def test_get_settings(updater_userlists, updater_languages, file_root_init, infr
     assert "data" in res
     assert "eula" in res["data"]
     assert "token" in res["data"]
-    assert {"minipot", "nikola", "survey"} == res["data"]["modules"].keys()
+    assert {"minipot", "fwlogs", "survey"} == res["data"]["modules"].keys()
     assert {"ftp", "http", "smtp", "telnet"} == res["data"]["modules"]["minipot"]["protocols"].keys()
 
 
@@ -323,7 +323,7 @@ def test_get_than_update(
 
     # modules are on true by default, change some
     modules = res["data"]["modules"]
-    modules["nikola"]["enabled"] = False
+    modules["survey"]["enabled"] = False
 
     # protocols are on by defualt, turn some off
     protocols = res["data"]["modules"]["minipot"]["protocols"]
@@ -356,7 +356,7 @@ def test_get_than_update(
         {"module": "sentinel", "action": "get_settings", "kind": "request"}
     )
     assert "errors" not in res.keys()
-    assert res["data"]["modules"]["nikola"]["enabled"] is False
+    assert res["data"]["modules"]["survey"]["enabled"] is False
     minipot_prot = res["data"]["modules"]["minipot"]["protocols"]
     assert minipot_prot["http"] is False
     assert minipot_prot["telnet"] is False

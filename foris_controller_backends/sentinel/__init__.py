@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 class SentinelUci:
     _MINIPOT_PROTOCOLS = ["ftp", "http", "smtp", "telnet"]
-    _SENTINEL_MODULES = ["minipot", "nikola", "survey"]
+    _SENTINEL_MODULES = ["minipot", "fwlogs", "survey"]
 
     def _read_uci(self):
         with UciBackend() as backend:
@@ -55,12 +55,8 @@ class SentinelUci:
             pkg["name"]: {
                 "installed": pkg["enabled"],
                 "enabled": parse_bool(get_option_named(data, "sentinel", pkg["name"], "enabled", "1"))
-            } for pkg in packages
+            } for pkg in packages if pkg["name"] in SentinelUci._SENTINEL_MODULES
         }
-
-        # haas, dynfw not yet supported to configure
-        modules.pop("haas")
-        modules.pop("dynfw")
 
         protocols = {
             protocol : False if get_option_named(data, "sentinel", "minipot", f"{protocol}_port", "1") == "0" else True
@@ -101,7 +97,7 @@ class SentinelUci:
 
             if modules is not None:
                 for module in SentinelUci._SENTINEL_MODULES:
-                    if modules[module]:
+                    if modules.get(module):
                         backend.add_section("sentinel", module, module)
                         backend.set_option("sentinel", module, "enabled", store_bool(modules[module]["enabled"]))
 

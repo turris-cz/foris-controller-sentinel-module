@@ -50,7 +50,7 @@ class MockSentinelHandler(Handler, BaseMockHandler):
                 "telnet": False
             }
         },
-        "nikola": {
+        "fwlogs": {
             "enabled": True,
             "installed": True
         },
@@ -58,7 +58,6 @@ class MockSentinelHandler(Handler, BaseMockHandler):
             "enabled": True,
             "installed": True
         }
-
     }
 
     @logger_wrapper(logger)
