@@ -1,6 +1,6 @@
 #
 # foris-controller-sentinel-module
-# Copyright (C) 2019-2021 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2019-2023 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,26 +18,11 @@
 #
 
 import pytest
-import secrets
 import textwrap
 
 from .conftest import CMDLINE_SCRIPT_ROOT
 
-from foris_controller_testtools.fixtures import (
-    only_message_buses,
-    backend,
-    file_root_init,
-    infrastructure,
-    init_script_result,
-    only_backends,
-    uci_configs_init,
-    notify_api,
-    updater_userlists,
-    updater_languages,
-    UCI_CONFIG_DIR_PATH,
-    device,
-    turris_os_version,
-)
+from foris_controller_testtools.fixtures import UCI_CONFIG_DIR_PATH
 from foris_controller_testtools.utils import (
     get_uci_module,
     command_was_called,
