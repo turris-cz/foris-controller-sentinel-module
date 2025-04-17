@@ -1,6 +1,6 @@
 #
 # foris-controller-sentinel-module
-# Copyright (C) 2019-2021 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2019-2025 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ from foris_controller_backends.cmdline import BaseCmdLine, BackendCommandFailed
 from foris_controller_backends.files import BaseFile
 from foris_controller_backends.uci import UciBackend, get_option_named, parse_bool, store_bool
 from foris_controller_backends.updater import Updater
+from foris_controller_backends.web import WebUciCommands
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +112,9 @@ class SentinelUci:
                         backend.del_option("sentinel", "minipot", f"{protocol}_port", fail_on_error=False)
                     else:
                         backend.set_option("sentinel", "minipot", f"{protocol}_port", "0")
+
+        # Update wizard step
+        WebUciCommands.update_passed("sentinel")
 
         # Reload sentinel components
         BaseCmdLine._run_command_and_check_retval(["/usr/bin/sentinel-reload"], 0)
