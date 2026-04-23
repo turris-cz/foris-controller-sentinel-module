@@ -37,6 +37,11 @@ sentinel = "foris_controller_sentinel_module.guide:extras"
 path = "foris_controller_sentinel_module/__init__.py"
 
 [tool.hatch.build.targets.sdist]
+packages = [
+    "foris_controller_backends/",
+    "foris_controller_modules/",
+    "foris_controller_sentinel_module/",
+]
 include = [
     "/foris_controller_modules",
     "/foris_controller_backends",
@@ -44,6 +49,11 @@ include = [
 ]
 
 [tool.hatch.build.targets.wheel]
+packages = [
+    "foris_controller_backends/",
+    "foris_controller_modules/",
+    "foris_controller_sentinel_module/",
+]
 include = [
     "/foris_controller_modules",
     "/foris_controller_backends",
