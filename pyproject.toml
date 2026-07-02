@@ -30,6 +30,9 @@ ubus = [
     "ubus",
 ]
 
+[project.entry-points.foris_controller_modules]
+sentinel = "foris_controller_modules.sentinel"
+
 [project.entry-points.foris_controller_workflow_extras]
 sentinel = "foris_controller_sentinel_module.guide:extras"
 
